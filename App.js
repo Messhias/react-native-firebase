@@ -5,67 +5,93 @@ import { View, Text, Button } from 'react-native';
 import firebase from 'firebase';
 
 export default class App extends Component {
-    constructor(props){
-    	super(props);
-    	this.state = {
-            pontuacao: 0
+
+    componentWillMount() {
+        const config = {
+            apiKey: "AIzaSyAHPKRPCRKh4l-lt0ThLcXQ_r6TAlODmV0",
+            authDomain: "fir-react-teste.firebaseapp.com",
+            databaseURL: "https://fir-react-teste.firebaseio.com",
+            projectId: "fir-react-teste",
+            storageBucket: "fir-react-teste.appspot.com",
+            messagingSenderId: "396556937415"
         };
+        firebase.initializeApp(config);
     }
 
+    registerUser() {
+        var email = "messhias@gmail.com";
+        var pass = "123456789";
 
-  componentWillMount() {
-    const config = {
-        apiKey: "AIzaSyAHPKRPCRKh4l-lt0ThLcXQ_r6TAlODmV0",
-        authDomain: "fir-react-teste.firebaseapp.com",
-        databaseURL: "https://fir-react-teste.firebaseio.com",
-        projectId: "fir-react-teste",
-        storageBucket: "fir-react-teste.appspot.com",
-        messagingSenderId: "396556937415"
-    };
-    firebase.initializeApp(config);
-  }
+        const user = firebase.auth();
 
-  saveData() {
-      var employers  = firebase.database().ref('employers');
-      employers.remove();
-      employers.push().child('name').set('William');
-      employers.push().child('name').set('Set');
-      employers.push().child('name').set('Set');
-      employers.push().set({
-          name: "Fabio"
-      });
+        user.createUserWithEmailAndPassword(email, pass).catch( (error) => {
+            let message= '';
+            if (error.code == 'auth/weak-password') {
+                message = "Sua senha está muito fraco, tem que ter ao menos 6 caracteres";
+            } else {
+                message = error.message;
+            }
+            alert(message);
+        });
+    }
 
-      var pontuacao = firebase.database().ref('pontuacao');
-      pontuacao.set(100);
-      employers.push().remove();
-  }
+    checkLoggedUser() {
+        const user = firebase.auth();
 
-  listData() {
-      const pontuacao = firebase.database().ref('pontuacao');
-      pontuacao.on('value', (snapshot) => {
-          const pontuacao = snapshot.val();
-          this.setState({ pontuacao });
-      });
-  }
+        user.onAuthStateChanged( (currentUser) => {
+            if (currentUser) {
+                alert("You're logged in");
+            } else {
+                alert("You're not logged in");
+            }
+        });
 
-  render() {
-      const { pontuacao } = this.state;
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Button
-              onPress={ () => { this.saveData() }}
-              title="Save data"
-              color="#841584"
-              accessibilyLabel="Save data"
-          />
-          <Button
-              onPress={ () => { this.listData() }}
-              title="List data"
-              color="#841584"
-              accessibilyLabel="List data"
-          />
-      <Text>{pontuacao}</Text>
-      </View>
-    );
-  }
+    }
+
+    logout() {
+        const user = firebase.auth();
+        var email = "messhias@gmail.com";
+        var pass = "123456789";
+        user.signOut();
+    }
+
+    login() {
+        const user = firebase.auth();
+        var email = "messhias@gmail.com";
+        var pass = "123456789";
+        user.signInWithEmailAndPassword(email, pass).catch((error) => {
+            alert(error.message);
+        });
+    }
+
+    render() {
+        return (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <Button
+                  onPress={ () => { this.registerUser() }}
+                  title="Register user"
+                  color="#841584"
+                  accessibilyLabel="Register user"
+                />
+                <Button
+                  onPress={ () => { this.checkLoggedUser() }}
+                  title="Check logged user"
+                  color="#841584"
+                  accessibilyLabel="Check logged user"
+                />
+                <Button
+                  onPress={ () => { this.logout() }}
+                  title="Logout"
+                  color="#841584"
+                  accessibilyLabel="Logout"
+                />
+                <Button
+                  onPress={ () => { this.login() }}
+                  title="Login"
+                  color="#841584"
+                  accessibilyLabel="Login"
+                />
+            </View>
+        );
+    }
 }
